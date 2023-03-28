@@ -1,32 +1,125 @@
-# Prerequisites
-*.d
+#include <iostream>
+#include <vector>
+using namespace std;
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+class Character {
+protected:
+    string name;
+    int health;
+    int attack;
+    int defense;
+public:
+    Character(string n, int h, int a, int d) {
+        name = n;
+        health = h;
+        attack = a;
+        defense = d;
+    }
 
-# Precompiled Headers
-*.gch
-*.pch
+    virtual void defend() {
+        cout << name << " defends.\n";
+    }
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+    virtual void takeDamage(int damage) {
+        health -= damage;
+        cout << name << " takes " << damage << " damage. " << name << " health is now " << health << ".\n";
+    }
 
-# Fortran module files
-*.mod
-*.smod
+    bool isAlive() {
+        return health > 0;
+    }
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+    int getAttack() {
+        return attack;
+    }
 
-# Executables
-*.exe
-*.out
-*.app
+    int getDefense() {
+        return defense;
+    }
+
+    string getName() {
+        return name;
+    }
+};
+
+class CassidyAndrew : public Character {
+public:
+    CassidyAndrew(string n, int h, int a, int d) : Character(n, h, a, d) {}
+
+    void attackEnemy(Character* enemy) {
+        int damage = attack - enemy->getDefense();
+        if (damage <= 0) {
+            damage = 1;
+        }
+        cout << name << " attacks " << enemy->getName() << " for " << damage << " damage.\n";
+        enemy->takeDamage(damage);
+    }
+
+    void defend() {
+        cout << name << " defends.\n";
+        defense += 5;
+    }
+};
+
+class DaveMiller : public Character {
+public:
+    DaveMiller(string n, int h, int a, int d) : Character(n, h, a, d) {}
+
+    void attackPlayer(Character* player) {
+        int damage = attack - player->getDefense();
+        if (damage <= 0) {
+            damage = 1;
+        }
+        cout << name << " attacks " << player->getName() << " for " << damage << " damage.\n";
+        player->takeDamage(damage);
+    }
+};
+
+int main() {
+    CassidyAndrew player("Cassidy Andrew", 100, 20, 10);
+    DaveMiller enemy("Dave Miller", 80, 15, 5);
+
+    vector<Character*> characters;
+    characters.push_back(&player);
+    characters.push_back(&enemy);
+
+    int turn = 1;
+    while (player.isAlive() && enemy.isAlive()) {
+        cout << "\nTurn " << turn << "\n";
+
+        for (Character* character : characters) {
+            if (!character->isAlive()) {
+                continue;
+            }
+
+            cout << character->getName() << "'s turn.\n";
+            cout << "1. Attack\n";
+            cout << "2. Defend\n";
+            int choice;
+            cin >> choice;
+
+            if (choice == 1) {
+                if (character == &player) {
+                    player.attackEnemy(&enemy);
+                }
+                else {
+                    enemy.attackPlayer(&player);
+                }
+            }
+            else if (choice == 2) {
+                character->defend();
+            }
+        }
+
+        turn++;
+    }
+
+    if (player.isAlive()) {
+        cout << "You win!\n";
+    }
+    else {
+        cout << "You lose.\n";
+    }
+
+    return 0;
+}
